@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-season="0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>冷暖氣團對抗戰</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e7eef1; --panel:#fbfdfd; --glass:rgba(252,254,254,.80);
+  --ink:#15212b; --muted:#5d6b78; --line:rgba(80,110,130,.28); --iso:rgba(60,100,120,.10);
+  --cold:#1d5fcf; --cold-soft:rgba(120,165,235,.30); --warm:#d6402b; --warm-soft:rgba(240,130,100,.30);
+  --occ:#7a3fa6; --water:#12908a; --both:#7a3fa6; --land:#6f9d5c;
+  --shadow:0 1px 0 rgba(20,40,60,.06), 0 8px 22px rgba(20,40,60,.10);
+  --sk0:radial-gradient(60% 40% at 85% 0%, rgba(255,205,222,.8), transparent 70%), linear-gradient(180deg,#e2f1e8 0%,#f8e8ef 100%);
+  --sk1:radial-gradient(50% 45% at 88% -5%, rgba(255,224,130,.95), transparent 68%), linear-gradient(180deg,#cbe8f6 0%,#e8f5f1 55%,#fff0c6 100%);
+  --sk2:radial-gradient(60% 40% at 10% 0%, rgba(255,185,115,.65), transparent 70%), linear-gradient(180deg,#f6e3ca 0%,#eecfb0 100%);
+  --sk3:radial-gradient(60% 40% at 50% -10%, rgba(255,255,255,.95), transparent 70%), linear-gradient(180deg,#d6e4f3 0%,#f0f5fa 100%);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b1218; --panel:#141e27; --glass:rgba(18,28,38,.78);
+    --ink:#e6edf2; --muted:#93a3b1; --line:rgba(140,175,200,.24); --iso:rgba(120,170,200,.07);
+    --cold:#5b9bff; --cold-soft:rgba(70,130,220,.30); --warm:#ff7a5a; --warm-soft:rgba(255,120,80,.26);
+    --occ:#b784e0; --water:#3cc7bf; --both:#b784e0; --land:#7fb56b;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 8px 22px rgba(0,0,0,.4);
+    --sk0:radial-gradient(60% 40% at 85% 0%, rgba(214,110,150,.30), transparent 70%), linear-gradient(180deg,#0f1a17 0%,#221520 100%);
+    --sk1:radial-gradient(50% 45% at 88% -5%, rgba(255,200,80,.26), transparent 68%), linear-gradient(180deg,#08192a 0%,#0d2a30 60%,#2a2410 100%);
+    --sk2:radial-gradient(60% 40% at 10% 0%, rgba(255,140,60,.26), transparent 70%), linear-gradient(180deg,#1e140b 0%,#2f1b10 100%);
+    --sk3:radial-gradient(60% 40% at 50% -10%, rgba(180,210,255,.24), transparent 70%), linear-gradient(180deg,#0a1320 0%,#16243a 100%);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b1218; --panel:#141e27; --glass:rgba(18,28,38,.78);
+  --ink:#e6edf2; --muted:#93a3b1; --line:rgba(140,175,200,.24); --iso:rgba(120,170,200,.07);
+  --cold:#5b9bff; --cold-soft:rgba(70,130,220,.30); --warm:#ff7a5a; --warm-soft:rgba(255,120,80,.26);
+  --occ:#b784e0; --water:#3cc7bf; --both:#b784e0; --land:#7fb56b;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 8px 22px rgba(0,0,0,.4);
+  --sk0:radial-gradient(60% 40% at 85% 0%, rgba(214,110,150,.30), transparent 70%), linear-gradient(180deg,#0f1a17 0%,#221520 100%);
+  --sk1:radial-gradient(50% 45% at 88% -5%, rgba(255,200,80,.26), transparent 68%), linear-gradient(180deg,#08192a 0%,#0d2a30 60%,#2a2410 100%);
+  --sk2:radial-gradient(60% 40% at 10% 0%, rgba(255,140,60,.26), transparent 70%), linear-gradient(180deg,#1e140b 0%,#2f1b10 100%);
+  --sk3:radial-gradient(60% 40% at 50% -10%, rgba(180,210,255,.24), transparent 70%), linear-gradient(180deg,#0a1320 0%,#16243a 100%);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+body{
+  margin:0;background-color:var(--bg);color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  line-height:1.55;-webkit-text-size-adjust:100%;
+}
+button{font:inherit;color:inherit;cursor:pointer}
+
+/* 季節天空:四層疊合,換季時交叉淡入 */
+.sky{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.sky i{position:absolute;inset:0;opacity:0;transition:opacity 2s ease}
+.sky i.on{opacity:1}
+.sky i:nth-child(1){background:var(--sk0)} .sky i:nth-child(2){background:var(--sk1)}
+.sky i:nth-child(3){background:var(--sk2)} .sky i:nth-child(4){background:var(--sk3)}
+.sky::after{content:"";position:absolute;inset:0;
+  background-image:repeating-radial-gradient(circle at 12% -20%, transparent 0 58px, var(--iso) 58px 60px),
+                   repeating-radial-gradient(circle at 105% 40%, transparent 0 74px, var(--iso) 74px 76px)}
+#fx{position:fixed;inset:0;z-index:5;pointer-events:none}
+
+.app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:18px 14px 44px}
+
+/* 標題 */
+.title{margin:6px 0 16px}
+.title h1{margin:0;font-family:"Noto Serif TC","Noto Sans TC",serif;font-size:clamp(32px,9vw,50px);font-weight:900;letter-spacing:.03em;line-height:1.1}
+.title h1 .c{color:var(--cold)} .title h1 .w{color:var(--warm)}
+.title p{margin:6px 0 0;color:var(--muted);font-size:15px}
+.stitch{display:flex;gap:3px;overflow:hidden;margin-top:10px;height:16px;font-size:13px;line-height:16px;white-space:nowrap}
+.stitch span{flex:none}
+.stitch .a{color:var(--cold)} .stitch .b{color:var(--warm)}
+
+.panel{background:var(--glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px}
+.panel h2{margin:0 0 10px;font-size:19px}
+.panel h3{margin:18px 0 8px;font-size:14px;color:var(--muted);font-weight:500}
+
+/* 開局 */
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{border:2px solid var(--line);background:var(--glass);border-radius:14px;padding:12px;text-align:left;transition:border-color .15s, background .15s, transform .12s}
+.opt:hover{transform:translateY(-1px)}
+.opt b{display:block;font-size:17px}
+.opt small{color:var(--muted);font-size:13px}
+.opt.on.cold{border-color:var(--cold);background:var(--cold-soft)}
+.opt.on.warm{border-color:var(--warm);background:var(--warm-soft)}
+.opt.neutral.on{border-color:var(--ink);background:var(--glass);box-shadow:inset 0 -4px 0 var(--sc)}
+.seg4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.seg4 .opt{text-align:center;padding:10px 4px;border-bottom:4px solid var(--sc)}
+.seg4 .opt b{font-size:15px}
+.seg4 .opt small{display:block;font-size:11.5px;line-height:1.3;margin-top:2px}
+.btn{border:0;border-radius:14px;padding:12px 18px;font-weight:700;font-size:16px;background:var(--ink);color:var(--bg)}
+.btn.primary{width:100%;margin-top:18px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:focus-visible,.opt:focus-visible,.card:focus-visible,.qopt:focus-visible,.mini:focus-visible{outline:3px solid var(--cold);outline-offset:2px}
+details.how{margin-top:16px;border-top:1px dashed var(--line);padding-top:12px;font-size:14px}
+details.how summary{cursor:pointer;font-weight:700}
+details.how ul{margin:8px 0 0;padding-left:18px}
+details.how li{margin:4px 0}
+
+/* 頂部與年度進度 */
+.top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.top .rd{font-family:"Noto Serif TC","Noto Sans TC",serif;font-weight:900;font-size:20px}
+.top .rd small{font-family:"Noto Sans TC",sans-serif;font-weight:500;font-size:13px;color:var(--muted);margin-left:6px}
+.spacer{flex:1}
+.mini{border:1px solid var(--line);background:var(--glass);border-radius:10px;padding:5px 11px;font-size:13px}
+.mini:disabled{opacity:.4;cursor:not-allowed}
+.year{margin:0 0 12px}
+.ylab{display:grid;grid-template-columns:repeat(4,1fr);font-size:12.5px;font-weight:700;margin-bottom:4px}
+.ybar{display:grid;grid-template-columns:repeat(12,1fr);gap:3px}
+.ybar i{height:8px;border-radius:4px;background:var(--sc);opacity:.26;transition:opacity .4s}
+.ybar i.done{opacity:.85}
+.ybar i.cur{opacity:1;box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--sc)}
+.s0{--sc:#e0779b}.s1{--sc:#e8a91a}.s2{--sc:#d3702a}.s3{--sc:#5b93d0}
+
+/* 地圖 */
+.axis{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin:0 2px 4px}
+.axis .l{color:var(--cold);font-weight:700}.axis .r{color:var(--warm);font-weight:700}
+.mapwrap{position:relative;border:1px solid var(--line);border-radius:16px;background:var(--glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:var(--shadow)}
+.fields{position:absolute;inset:0;border-radius:15px;overflow:hidden}
+.fields i{position:absolute;top:0;bottom:0;transition:all .8s cubic-bezier(.3,.7,.2,1)}
+#cfield{left:0;background:linear-gradient(90deg,transparent,var(--cold-soft) 70%)}
+#wfield{right:0;background:linear-gradient(270deg,transparent,var(--warm-soft) 70%)}
+.tiles{position:relative;display:grid;grid-template-columns:repeat(9,1fr)}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:10px 0 26px;min-height:98px;border-left:1px dashed var(--line);font-size:12px;overflow:hidden}
+.tile:first-child{border-left:0}
+.tile .te{font-size:19px;line-height:1.2;position:relative}
+.tile b{font-size:12.5px;margin-top:2px;position:relative}
+.tile i{font-style:normal;color:var(--muted);font-size:10.5px;position:relative}
+.tile.cur{background:rgba(255,255,255,.28)}
+.tile.cur b{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.art{position:absolute;left:0;right:0;bottom:0;width:100%;height:20px}
+.art.sea path{fill:none;stroke:var(--water);stroke-width:1.4;opacity:.75;vector-effect:non-scaling-stroke}
+.art.mtn path{fill:var(--muted);opacity:.42}
+.art.pln path{fill:var(--land);opacity:.45}
+.art.cnt path{fill:#c9a35a;opacity:.5}
+.mk{position:absolute;top:-8px;bottom:-8px;width:22px;margin-left:-11px;display:flex;flex-direction:column;align-items:center;justify-content:space-around;z-index:2;transition:left .8s cubic-bezier(.3,.7,.2,1);pointer-events:none}
+.mk::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--fc,var(--muted));box-shadow:0 0 10px var(--fc,transparent)}
+.mk span{position:relative;background:var(--panel);border-radius:50%;line-height:1;font-size:13px;padding:1px 0;color:var(--fc,var(--muted))}
+.mk.cold{--fc:var(--cold)} .mk.warm{--fc:var(--warm)} .mk.stationary{--fc:var(--muted)} .mk.occluded{--fc:var(--occ)}
+.mk .gc{color:var(--cold)} .mk .gw{color:var(--warm)} .mk .go{color:var(--occ)}
+.fx{position:absolute;top:-2px;transform:translateX(-50%);font-weight:900;font-size:20px;text-shadow:0 1px 0 var(--panel),0 0 8px var(--panel);z-index:3;pointer-events:none;animation:rise 1.3s ease-out both}
+.fx.cold{color:var(--cold)} .fx.warm{color:var(--warm)}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,10px)}15%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px)}}
+.zoneinfo{margin:10px 2px 0;font-size:13.5px;color:var(--muted)}
+.zoneinfo b{color:var(--ink)}
+
+/* 預報 */
+.forecast{margin-top:12px;display:flex;gap:14px;align-items:center;padding:12px 14px}
+.forecast .fs{flex:none;min-width:78px;text-align:center;font-weight:900;font-size:15px;color:var(--fc,var(--muted));border-right:2px solid var(--line);padding-right:14px}
+.forecast .fs .wi{display:block;font-size:30px;line-height:1.1;margin-bottom:2px}
+.forecast .fs em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;margin-top:1px}
+.forecast.cold{--fc:var(--cold)} .forecast.warm{--fc:var(--warm)} .forecast.occluded{--fc:var(--occ)} .forecast.stationary{--fc:var(--muted)}
+.forecast p{margin:0;font-size:14px}
+.forecast .st{margin-top:4px;color:var(--muted);font-size:12.5px}
+
+/* 雙方面板 */
+.sides{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.pn{background:var(--glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--line);border-top-width:4px;border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);transition:box-shadow .3s}
+.pn.cold{border-top-color:var(--cold)} .pn.warm{border-top-color:var(--warm)}
+.pn.cold.act{box-shadow:0 0 0 2px var(--cold),0 8px 22px rgba(29,95,207,.22)}
+.pn.warm.act{box-shadow:0 0 0 2px var(--warm),0 8px 22px rgba(214,64,43,.22)}
+.pn .ph{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.pn .ph b{font-size:15.5px}
+.pn .ph em{font-style:normal;font-size:12px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--bg)}
+.pn .og{font-size:12px;color:var(--muted);margin:1px 0 6px}
+.live{font-size:11px;font-weight:700;color:var(--water);display:inline-flex;align-items:center;gap:4px}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--water);animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+.row{display:flex;align-items:center;gap:8px;font-size:12.5px;margin:4px 0}
+.row span:first-child{width:28px;color:var(--muted);flex:none}
+.row b{width:16px;text-align:right;font-variant-numeric:tabular-nums}
+.bar{flex:1;height:9px;background:var(--bg);border-radius:5px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:5px;transition:width .5s}
+.pn.cold .bar .p{background:linear-gradient(90deg,#4f8ff0,var(--cold))}
+.pn.warm .bar .p{background:linear-gradient(90deg,#ff9a6f,var(--warm))}
+.bar .h{background:linear-gradient(90deg,#5fd6cf,var(--water))}
+.pips{display:flex;gap:5px}
+.pip{width:13px;height:13px;border-radius:50%;border:2px solid var(--line);transition:all .2s}
+.pn.cold .pip.on{background:var(--cold);border-color:var(--cold);box-shadow:0 0 8px var(--cold)}
+.pn.warm .pip.on{background:var(--warm);border-color:var(--warm);box-shadow:0 0 8px var(--warm)}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;min-height:20px}
+.chip{font-size:11.5px;border:1px solid var(--line);border-radius:6px;padding:0 6px;background:var(--bg)}
+
+/* 手牌 */
+.handhead{display:flex;justify-content:space-between;align-items:center;margin:18px 2px 8px}
+.handhead h2{margin:0;font-family:"Noto Serif TC","Noto Sans TC",serif;font-size:17px;font-weight:900}
+.hand{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.wait{grid-column:1/-1;text-align:center;padding:28px 10px;color:var(--muted);background:var(--glass);border:1px dashed var(--line);border-radius:14px}
+.card{--c:var(--both);position:relative;text-align:left;background:var(--glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--line);border-top:5px solid var(--c);border-radius:14px;padding:10px 12px 12px;box-shadow:var(--shadow);min-height:136px;display:flex;flex-direction:column;gap:3px;transition:transform .14s, box-shadow .14s}
+.card.cold{--c:var(--cold)} .card.warm{--c:var(--warm)}
+.card:not(:disabled):hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(20,40,60,.18)}
+.card:not(:disabled):active{transform:translateY(0) scale(.98)}
+.card:disabled{filter:saturate(.25);opacity:.62;cursor:not-allowed}
+.card .ct{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.card .ic{width:34px;height:34px;border-radius:50%;background:var(--c);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1}
+.card .co{font-weight:900;font-size:13px;color:var(--c);border:2px solid var(--c);border-radius:999px;padding:0 9px;line-height:22px}
+.card .nm{font-family:"Noto Serif TC","Noto Sans TC",serif;font-weight:900;font-size:17px}
+.card .ds{font-size:13px}
+.card .tg{font-size:11.5px;color:var(--muted);margin-top:auto;padding-top:4px}
+.card .why{font-size:12px;color:var(--warm);font-weight:700}
+.card.deal{animation:deal .45s both cubic-bezier(.2,.8,.2,1);animation-delay:calc(var(--i) * 70ms)}
+@keyframes deal{from{opacity:0;transform:translateY(16px) rotate(-1.5deg)}to{opacity:1;transform:none}}
+.actions{display:flex;gap:10px;margin-top:12px}
+.actions .btn{flex:1}
+
+.tip{margin-top:12px;background:var(--glass);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--line);border-left:6px solid var(--water);border-radius:14px;padding:10px 12px;font-size:14px}
+.tip b{display:block;margin-bottom:2px}
+.log{margin:12px 0 0;padding:0;list-style:none;font-size:13.5px}
+.log li{padding:5px 0 5px 14px;border-bottom:1px dashed var(--line);position:relative;color:var(--muted)}
+.log li:first-child{color:var(--ink)}
+.log li::before{content:"";position:absolute;left:0;top:12px;width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.log li.cold::before{background:var(--cold)} .log li.warm::before{background:var(--warm)} .log li.sys::before{background:var(--water)}
+
+/* 換季公告 */
+.stoast{position:fixed;left:50%;top:20%;transform:translateX(-50%);z-index:40;pointer-events:none;opacity:0;text-align:center;
+  background:var(--glass);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--line);border-bottom:5px solid var(--sc);border-radius:18px;padding:14px 26px;box-shadow:var(--shadow);max-width:88vw}
+.stoast .big{font-family:"Noto Serif TC","Noto Sans TC",serif;font-size:30px;font-weight:900}
+.stoast .sm{font-size:13.5px;color:var(--muted);margin-top:2px}
+.stoast.show{animation:toast 2.8s ease both}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,14px) scale(.96)}12%{opacity:1;transform:translate(-50%,0) scale(1)}78%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-10px)}}
+
+/* 疊層 */
+.ov{position:fixed;inset:0;background:rgba(6,12,18,.6);display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top,0px)) 14px calc(16px + env(safe-area-inset-bottom,0px));z-index:50;overflow:auto}
+.ov .panel{max-width:480px;width:100%;background:var(--panel);animation:pop .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{from{opacity:0;transform:scale(.94) translateY(8px)}to{opacity:1;transform:none}}
+.qopts{display:grid;gap:8px;margin-top:12px}
+.qopt{border:2px solid var(--line);background:var(--panel);border-radius:12px;padding:10px 12px;text-align:left;font-size:15px}
+.qopt.ok{border-color:var(--water);background:rgba(18,144,138,.16)}
+.qopt.no{border-color:var(--warm);background:var(--warm-soft)}
+.qexp{margin-top:12px;font-size:14px;padding:10px 12px;border-radius:12px;background:var(--bg)}
+.res h2{font-family:"Noto Serif TC","Noto Sans TC",serif;font-size:28px;font-weight:900;margin-bottom:4px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.stats div{background:var(--bg);border-radius:12px;padding:8px;text-align:center}
+.stats b{display:block;font-size:17px}
+.stats small{color:var(--muted);font-size:12px}
+.learn{margin:0;padding-left:18px;font-size:13.5px}
+.learn li{margin:6px 0}
+
+@media (max-width:420px){
+  .tile{min-height:90px}
+  .tile b{font-size:11.5px}
+  .forecast .fs{min-width:64px;padding-right:10px}
+  .forecast{gap:10px}
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<div class="sky" id="sky" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="stoast" id="stoast" role="status"></div>
+
+<div class="app">
+  <header class="title">
+    <h1><span class="c">冷</span><span class="w">暖</span>氣團對抗戰</h1>
+    <p>把鋒面推到對手的家門口,順便學會天氣是怎麼來的。</p>
+    <div class="stitch" id="stitch" aria-hidden="true"></div>
+  </header>
+
+  <!-- 開局設定 -->
+  <section id="setup" class="panel">
+    <h2>選擇你的氣團</h2>
+    <div class="seg" id="sideSeg"></div>
+    <h3>氣團出身(決定起始的氣壓與水氣)</h3>
+    <div class="seg" id="originSeg"></div>
+    <h3>開局季節(每 3 回合換一季,共 12 回合)</h3>
+    <div class="seg4" id="seasonSeg"></div>
+    <button class="btn primary" id="start">開始對抗</button>
+    <details class="how">
+      <summary>玩法說明</summary>
+      <ul>
+        <li><b>目標:</b>把鋒面推到對手的基地(冷氣團基地在最北的華北,暖氣團基地在最南的南海)。12 回合結束時,鋒面在誰那一側,誰就佔上風。</li>
+        <li><b>每回合:</b>有 3 點能量,從你的戰術卡中抽 4 張,每張最多出一次。</li>
+        <li><b>氣壓:</b>氣壓差越大風越強,每 4 點氣壓讓你的每次推進 +1。</li>
+        <li><b>水氣:</b>暖氣團的燃料,雷陣雨、颱風都要消耗水氣。</li>
+        <li><b>地形:</b>海洋、山脈、平原各有效果,看看鋒面現在在哪裡。</li>
+        <li><b>季節:</b>背景會跟著季節變色、飄落春櫻、夏雨、秋葉、冬雪。冬天冷氣團更強、夏天暖氣團更強;梅雨、颱風、東北季風只在特定季節能用。</li>
+        <li><b>氣象小測驗:</b>每回合可答一題,答對多 1 點能量;不管對錯都會看到解說。</li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- 遊戲畫面 -->
+  <main id="game" hidden>
+    <div class="top">
+      <span class="rd" id="roundB"></span>
+      <span class="spacer"></span>
+      <button class="mini" id="restart">重新開始</button>
+    </div>
+    <div class="year" id="year"></div>
+    <div class="axis"><span class="l">北方:冷氣團的家</span><span class="r">南方:暖氣團的家</span></div>
+    <div class="mapwrap" id="mapwrap">
+      <div class="fields"><i id="cfield"></i><i id="wfield"></i></div>
+      <div class="tiles" id="tiles"></div>
+      <div class="mk" id="mk"></div>
+    </div>
+    <div class="zoneinfo" id="zoneinfo"></div>
+
+    <div class="panel forecast" id="forecast"></div>
+
+    <div class="sides" id="sides"></div>
+
+    <div class="handhead"><h2 id="handTitle">你的戰術卡</h2><button class="mini" id="quizBtn">氣象小測驗(+1 能量)</button></div>
+    <div class="hand" id="hand"></div>
+    <div class="actions"><button class="btn" id="endBtn">結束回合</button></div>
+
+    <div class="tip" id="tip"></div>
+    <ul class="log" id="log"></ul>
+  </main>
+</div>
+
+<!-- 測驗 -->
+<div class="ov" id="quizOv" hidden>
+  <div class="panel">
+    <h2 id="qq"></h2>
+    <div class="qopts" id="qopts"></div>
+    <div class="qexp" id="qexp" hidden></div>
+    <button class="btn primary" id="qclose" hidden>繼續作戰</button>
+  </div>
+</div>
+
+<!-- 結算 -->
+<div class="ov" id="endOv" hidden>
+  <div class="panel res">
+    <h2 id="rt"></h2>
+    <p id="rw" style="margin:0;color:var(--muted)"></p>
+    <div class="stats" id="rs"></div>
+    <b style="font-size:14px">這場你用過的氣象知識</b>
+    <ul class="learn" id="rl"></ul>
+    <button class="btn primary" id="again">再玩一次</button>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var cl=function(v,a,b){a=a==null?0:a;b=b==null?10:b;return Math.max(a,Math.min(b,v))};
+var other=function(s){return s==='cold'?'warm':'cold'};
+var NAME={cold:'冷氣團',warm:'暖氣團'};
+
+/* ===== 資料 ===== */
+var ZONES=[
+ {n:'華北',f:'華北大陸',t:'continent',e:'🏜️'},
+ {n:'東海',f:'東海海面',t:'sea',e:'🌊'},
+ {n:'北部',f:'台灣北部',t:'plain',e:'🌾'},
+ {n:'雪山',f:'雪山山脈',t:'mountain',e:'⛰️'},
+ {n:'中部',f:'台灣中部',t:'plain',e:'🌾'},
+ {n:'玉山',f:'玉山山脈',t:'mountain',e:'⛰️'},
+ {n:'南部',f:'台灣南部',t:'plain',e:'🌾'},
+ {n:'巴士',f:'巴士海峽',t:'sea',e:'🌊'},
+ {n:'南海',f:'南海暖池',t:'sea',e:'🌊'}
+];
+var TERRAIN={
+ continent:{n:'大陸',r:'乾冷的大陸,是冷氣團出生的地方。'},
+ sea:{n:'海洋',r:'每回合結束:暖氣團水氣 +1;冷氣團流過暖海面被加熱變性,氣壓 −1。'},
+ plain:{n:'平原',r:'沒有特殊效果,純粹比拼實力。'},
+ mountain:{n:'山脈',r:'阻擋氣團,所有推進 −1;迎風面降雨,暖氣團水氣 −1。'}
+};
+var ART={
+ sea:'<svg class="art sea" viewBox="0 0 40 16" preserveAspectRatio="none"><path d="M0 6 Q5 2 10 6 T20 6 T30 6 T40 6"/><path d="M0 12 Q5 8 10 12 T20 12 T30 12 T40 12"/></svg>',
+ mountain:'<svg class="art mtn" viewBox="0 0 40 16" preserveAspectRatio="none"><path d="M0 16 L9 4 L15 11 L23 1 L33 12 L40 16 Z"/></svg>',
+ plain:'<svg class="art pln" viewBox="0 0 40 16" preserveAspectRatio="none"><path d="M0 16 Q10 6 20 11 T40 9 V16 Z"/></svg>',
+ continent:'<svg class="art cnt" viewBox="0 0 40 16" preserveAspectRatio="none"><path d="M0 16 Q8 4 18 10 T40 6 V16 Z"/></svg>'
+};
+var SEASONS=[
+ {n:'春',e:'🌸',sub:'梅雨',r:'梅雨季,可用「梅雨滯留鋒」。',favor:null},
+ {n:'夏',e:'☀️',sub:'暖濕',r:'暖氣團推進 +1、回合結束水氣 +1;可用颱風、梅雨。',favor:'warm'},
+ {n:'秋',e:'🍂',sub:'颱風・季風',r:'颱風與東北季風的季節。',favor:null},
+ {n:'冬',e:'❄️',sub:'寒流',r:'冷氣團推進 +1、回合結束氣壓 +1;可用東北季風。',favor:'cold'}
+];
+var SCOL=['#e0779b','#e8a91a','#d3702a','#5b93d0'];
+var ORIGINS={
+ cold:[
+  {id:'cp',n:'極地大陸氣團',tag:'冷・乾',P:6,H:1,d:'氣壓高、水氣少'},
+  {id:'mp',n:'極地海洋氣團',tag:'冷・濕',P:4,H:3,d:'氣壓普通、水氣較多'}],
+ warm:[
+  {id:'tc',n:'熱帶大陸氣團',tag:'暖・乾',P:5,H:2,d:'氣壓較高、水氣少'},
+  {id:'tm',n:'熱帶海洋氣團',tag:'暖・濕',P:3,H:5,d:'氣壓低、水氣充沛'}]
+};
+var QUIZ=[
+ {q:'冷空氣和暖空氣相比,哪一個密度比較大?',o:['冷空氣','暖空氣','一樣大','要看風向'],a:0,w:'冷空氣分子擠得比較緊,密度大,所以會下沉;暖空氣輕,會上升。'},
+ {q:'高氣壓中心的空氣主要怎麼運動?',o:['上升','下沉','水平不動','忽上忽下'],a:1,w:'高壓中心空氣下沉,不容易成雲,天氣通常晴朗穩定。'},
+ {q:'冷鋒過境後,天氣通常怎麼變?',o:['升溫並持續下雨','降溫、漸漸轉晴','起大霧','形成颱風'],a:1,w:'冷鋒過境帶來雷陣雨和陣風,但之後冷空氣接手,氣溫下降、天氣轉晴。'},
+ {q:'暖鋒帶來的雨有什麼特色?',o:['短暫又猛烈','雨區廣、時間長的細雨','只下冰雹','完全不下雨'],a:1,w:'暖空氣慢慢爬上冷空氣,形成層狀雲,所以雨區廣、下得久但比較細。'},
+ {q:'台灣的梅雨主要和哪種鋒面有關?',o:['冷鋒','暖鋒','滯留鋒','囚錮鋒'],a:2,w:'春末夏初冷暖氣團勢均力敵,鋒面在附近滯留,就形成連日陰雨的梅雨。'},
+ {q:'台灣冬季最主要的盛行風是什麼?',o:['西南風','東北季風','西風','南風'],a:1,w:'冬季大陸冷高壓強盛,冷空氣南下形成東北季風,北部與東北部常下雨。'},
+ {q:'北半球的風受科氏力影響,會往哪個方向偏?',o:['向左','向右','向上','不會偏'],a:1,w:'北半球偏右、南半球偏左,所以北半球的低壓氣旋是逆時針旋轉。'},
+ {q:'颱風要在什麼條件下才容易形成?',o:['冷海面','溫暖的海面','高山上','沙漠中'],a:1,w:'颱風靠暖海面蒸發的水氣和釋放的潛熱當燃料,海水溫度通常要 26.5°C 以上。'},
+ {q:'逆溫層有什麼特徵?',o:['上冷下暖','上暖下冷,空氣穩定','溫度到處一樣','一定會下雨'],a:1,w:'上暖下冷讓空氣很穩定,對流被壓住,汙染物也不容易散開。'},
+ {q:'空氣上升時為什麼會變冷?',o:['太陽照不到','高處氣壓低,空氣膨脹降溫','風把熱帶走','水氣吸熱後消失'],a:1,w:'高處氣壓較低,上升的空氣膨脹,能量被用來做功,溫度就下降(絕熱膨脹)。'},
+ {q:'水氣凝結成水滴時,會發生什麼事?',o:['吸收熱量','釋放熱量(潛熱)','溫度不變也沒熱量變化','水氣消失'],a:1,w:'凝結會釋放潛熱,讓空氣更暖、更輕、更容易上升,是雷雨與颱風的重要能量來源。'},
+ {q:'風在大氣中大致是從哪裡吹向哪裡?',o:['低壓吹向高壓','高壓吹向低壓','南方吹向北方','山上吹向山下'],a:1,w:'氣壓差推動空氣流動,氣壓差越大風越強。'},
+ {q:'為什麼山的迎風面常常下大雨?',o:['山上溫度太高','氣流被迫爬升,冷卻後凝結成雨','山會製造水氣','海水被吹上山'],a:1,w:'這叫地形雨:潮濕氣流爬山時冷卻凝結,雨下在迎風面,背風面就乾多了。'},
+ {q:'「焚風」是怎麼形成的?',o:['氣流越山後下沉增溫','冷空氣從海上吹來','火山噴發','颱風眼經過'],a:0,w:'氣流翻過山脈後下沉,被壓縮增溫,又乾又熱。台東常見這種現象。'},
+ {q:'極地大陸氣團的特性是什麼?',o:['冷而乾','冷而濕','暖而乾','暖而濕'],a:0,w:'源地在高緯度的大陸上,所以又冷又乾;極地海洋氣團才是冷而濕。'}
+];
+
+/* ===== 狀態 ===== */
+var S=null;
+var setup={side:'cold',origin:0,season:0};
+var quizPool=[];
+
+function zoneOf(p){return Math.min(8,Math.floor(p/3))}
+function terrainAt(){return ZONES[zoneOf(S.pos)].t}
+function season(){return (S.startSeason+Math.floor((S.round-1)/3))%4}
+function who(side){return side===S.playerSide?'你':'對手'}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+
+/* ===== 季節背景與飄落粒子 ===== */
+var FX={cv:null,x:null,w:0,h:0,dpr:1,ps:[],season:0,last:0,reduce:false,ready:false};
+var PETAL=['#f8b9cb','#fbd3de','#f29fb8','#ffe0e8'];
+var LEAF=['#d9541e','#e88a1a','#c23b22','#e2b02c'];
+var TARGET=[24,80,22,54];
+
+function fxResize(){
+  FX.dpr=Math.min(2,window.devicePixelRatio||1);
+  FX.w=window.innerWidth;FX.h=window.innerHeight;
+  FX.cv.width=Math.round(FX.w*FX.dpr);FX.cv.height=Math.round(FX.h*FX.dpr);
+  FX.cv.style.width=FX.w+'px';FX.cv.style.height=FX.h+'px';
+  FX.x.setTransform(FX.dpr,0,0,FX.dpr,0,0);
+}
+function fxTarget(){var k=Math.min(1.4,Math.max(.55,FX.w/900));return Math.round(TARGET[FX.season]*k)}
+function rnd(a,b){return a+Math.random()*(b-a)}
+function fxMake(t,initial){
+  var p={t:t,x:rnd(0,FX.w),y:initial?rnd(0,FX.h):-24,a:1,ph:rnd(0,6.28),rot:rnd(0,6.28),k:0,vr:rnd(-1,1)};
+  if(t===0){p.s=rnd(6,11);p.vy=rnd(32,60);p.vx=rnd(12,30);p.sw=rnd(20,42);p.vph=rnd(1,2.2);p.c=PETAL[Math.floor(rnd(0,4))];p.a=.92}
+  else if(t===1){p.x=rnd(0,FX.w+220);p.vy=rnd(620,940);p.vx=-rnd(90,150);p.a=rnd(.28,.55)}
+  else if(t===2){p.s=rnd(8,14);p.vy=rnd(38,78);p.vx=rnd(-8,22);p.sw=rnd(28,56);p.vph=rnd(.9,1.8);p.k=Math.random()<.35?1:0;p.c=p.k?'#e9b830':LEAF[Math.floor(rnd(0,3))];p.a=.95}
+  else{p.s=rnd(1.6,4.6);p.vy=rnd(24,64);p.vx=rnd(-6,10);p.sw=rnd(10,26);p.vph=rnd(.8,1.8);p.k=p.s>3.6?1:0;p.a=.95}
+  return p;
+}
+function fxBurst(){
+  if(!FX.ready||FX.reduce)return;
+  var n=Math.round(fxTarget()*0.55);
+  for(var i=0;i<n;i++)FX.ps.push(fxMake(FX.season,true));
+}
+function fxDraw(){
+  var c=FX.x;c.clearRect(0,0,FX.w,FX.h);
+  for(var i=0;i<FX.ps.length;i++){
+    var p=FX.ps[i];c.globalAlpha=Math.max(0,Math.min(1,p.a));
+    if(p.t===0){
+      c.save();c.translate(p.x,p.y);c.rotate(p.rot);c.scale(Math.abs(Math.cos(p.ph*.9))*.7+.3,1);
+      c.fillStyle=p.c;var s=p.s;c.beginPath();c.moveTo(0,s);
+      c.bezierCurveTo(-s*.9,s*.5,-s*.8,-s*.8,-s*.15,-s);c.lineTo(0,-s*.7);c.lineTo(s*.15,-s);
+      c.bezierCurveTo(s*.8,-s*.8,s*.9,s*.5,0,s);c.fill();c.restore();
+    }else if(p.t===1){
+      c.strokeStyle='rgba(80,140,200,1)';c.lineWidth=1.1;c.beginPath();
+      c.moveTo(p.x,p.y);c.lineTo(p.x-p.vx*.03,p.y-p.vy*.03);c.stroke();
+    }else if(p.t===2){
+      c.save();c.translate(p.x,p.y);c.rotate(p.rot);c.scale(Math.abs(Math.cos(p.ph*.8))*.75+.25,1);
+      c.fillStyle=p.c;var l=p.s;c.beginPath();
+      if(p.k){c.moveTo(0,l);c.lineTo(-l*.9,-l*.5);c.quadraticCurveTo(0,-l*1.25,l*.9,-l*.5);c.closePath()}
+      else{c.moveTo(0,-l);c.quadraticCurveTo(l*.95,-l*.15,0,l);c.quadraticCurveTo(-l*.95,-l*.15,0,-l)}
+      c.fill();c.strokeStyle='rgba(80,30,10,.45)';c.lineWidth=.9;c.beginPath();c.moveTo(0,-l*.6);c.lineTo(0,l*1.25);c.stroke();c.restore();
+    }else{
+      if(p.k){
+        c.save();c.translate(p.x,p.y);c.rotate(p.rot);
+        for(var pass=0;pass<2;pass++){
+          c.strokeStyle=pass?'rgba(255,255,255,.98)':'rgba(110,145,190,.45)';c.lineWidth=pass?1.1:2.4;c.beginPath();
+          for(var k=0;k<3;k++){var a=k*Math.PI/3;c.moveTo(-Math.cos(a)*p.s*1.5,-Math.sin(a)*p.s*1.5);c.lineTo(Math.cos(a)*p.s*1.5,Math.sin(a)*p.s*1.5)}
+          c.stroke();
+        }
+        c.restore();
+      }else{
+        c.fillStyle='rgba(110,145,190,.30)';c.beginPath();c.arc(p.x,p.y,p.s+1.2,0,6.283);c.fill();
+        c.fillStyle='#ffffff';c.beginPath();c.arc(p.x,p.y,p.s,0,6.283);c.fill();
+      }
+    }
+  }
+  c.globalAlpha=1;
+}
+function fxLoop(ts){
+  var dt=Math.min(.05,((ts-FX.last)/1000)||.016);FX.last=ts;
+  var cnt=0,i;
+  for(i=0;i<FX.ps.length;i++)if(FX.ps[i].t===FX.season)cnt++;
+  var add=Math.min(3,fxTarget()-cnt);
+  for(i=0;i<add;i++)FX.ps.push(fxMake(FX.season,false));
+  var keep=[];
+  for(i=0;i<FX.ps.length;i++){
+    var p=FX.ps[i];
+    if(p.t!==FX.season)p.a-=dt*.7;
+    if(p.t===1){p.x+=p.vx*dt;p.y+=p.vy*dt}
+    else{p.ph+=p.vph*dt;p.x+=(p.vx+Math.sin(p.ph)*p.sw)*dt;p.y+=p.vy*dt;p.rot+=p.vr*dt}
+    if(p.a>0&&p.y<FX.h+30&&p.x>-240&&p.x<FX.w+80)keep.push(p);
+  }
+  FX.ps=keep;
+  fxDraw();
+  window.requestAnimationFrame(fxLoop);
+}
+function fxInit(){
+  FX.cv=$('#fx');FX.x=FX.cv.getContext('2d');
+  FX.reduce=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  fxResize();window.addEventListener('resize',fxResize);
+  FX.ready=true;
+  if(FX.reduce){FX.cv.style.display='none';return}
+  window.requestAnimationFrame(fxLoop);
+}
+var themed=-1;
+function setSeasonTheme(i){
+  if(themed===i)return;
+  themed=i;
+  document.documentElement.setAttribute('data-season',i);
+  var ls=$('#sky').children;
+  for(var k=0;k<ls.length;k++)ls[k].classList.toggle('on',k===i);
+  FX.season=i;fxBurst();
+}
+function showSeasonToast(i){
+  if(FX.reduce)return;
+  var s=SEASONS[i],el=$('#stoast');
+  el.style.setProperty('--sc',SCOL[i]);
+  el.innerHTML='<div class="big">'+s.e+' '+s.n+'季</div><div class="sm">'+s.r+'</div>';
+  el.classList.remove('show');void el.offsetWidth;el.classList.add('show');
+}
+
+/* ===== 推進計算 ===== */
+function rawPush(me,base,o){
+  o=o||{};var n=base;
+  if(!o.noBonus){
+    n+=Math.floor(S[me].P/4);
+    if(SEASONS[season()].favor===me)n+=1;
+  }
+  if(!o.ignoreMtn&&terrainAt()==='mountain')n-=1;
+  return Math.max(0,n);
+}
+function calcPush(me,base,o){
+  var n=rawPush(me,base,o);
+  n-=Math.min(S[other(me)].shield,n);
+  if(S.stallActive)n=Math.min(n,1);
+  return Math.max(0,n);
+}
+function doPush(me,base,o){
+  var raw=rawPush(me,base,o);
+  var ab=Math.min(S[other(me)].shield,raw);
+  S[other(me)].shield-=ab;
+  var n=raw-ab;
+  if(S.stallActive)n=Math.min(n,1);
+  S.lastAbsorb=ab;
+  S.pos=cl(S.pos+(me==='cold'?n:-n),0,26);
+  S.fxq.push({n:n,side:me});
+  return n;
+}
+function absNote(){return S.lastAbsorb>0?'(逆溫層擋下 '+S.lastAbsorb+')':''}
+function behind(me){return me==='cold'?S.pos<13:S.pos>13}
+
+/* ===== 卡牌 ===== */
+var CARDS={
+ highPress:{n:'高壓下沉',side:'cold',cost:1,ic:'⬇️',d:'氣壓 +2',
+  sci:'冷空氣密度大,會下沉堆積,使地面氣壓升高。高壓中心的下沉氣流不容易成雲,天氣通常晴朗穩定。',
+  run:function(me){S[me].P=cl(S[me].P+2);return '冷空氣下沉堆積,氣壓 +2。'},
+  ai:function(me){return S[me].P<=6?3:1}},
+ coldFront:{n:'冷鋒楔入',side:'cold',cost:2,ic:'▲',d:'推進 3;暖方水氣 −1',
+  sci:'冷鋒是冷空氣主動推進,楔入暖空氣下方,把暖空氣迅速抬升,容易發展出積雨雲,帶來短暫的雷陣雨和強風。',
+  run:function(me){var n=doPush(me,3);var o=other(me);S[o].H=cl(S[o].H-1);S.rain+=25;S.frontType='cold';
+    return '冷鋒楔入,推進 '+n+absNote()+';暖空氣被抬升成雨,水氣 −1。'},
+  ai:function(me){return calcPush(me,3)*2+1}},
+ coldWave:{n:'寒流南下',side:'cold',cost:3,ic:'🥶',d:'推進 5;氣壓 −2',
+  rt:'需要氣壓 ≥ 5',req:function(me){return S[me].P>=5},
+  sci:'氣壓差越大,風就越強。強盛的冷高壓把冷空氣一路往南推,就是寒流。',
+  run:function(me){var n=doPush(me,5);S[me].P=cl(S[me].P-2);S.frontType='cold';
+    return '強冷高壓南下,推進 '+n+absNote()+';氣壓 −2。'},
+  ai:function(me){return calcPush(me,5)*2+(behind(me)?1:0)}},
+ inversion:{n:'逆溫層',side:'cold',cost:2,ic:'🛡️',d:'擋下對手下回合 2 點推進',
+  sci:'逆溫層是上暖下冷,空氣非常穩定,對流被壓住,就像替冷空氣蓋了一層防線。',
+  run:function(me){S[me].shield=2;return '逆溫層形成,對手下回合最多被擋下 2 點推進。'},
+  ai:function(me){return behind(me)?4:1.5}},
+ monsoon:{n:'東北季風',side:'cold',cost:2,ic:'💨',seasons:[2,3],d:'推進 3;鋒面在東海或北部時推進 4',
+  sci:'秋冬大陸冷高壓增強,冷空氣南下形成東北季風,台灣北部與東北部迎風面容易下雨。',
+  run:function(me){var z=zoneOf(S.pos);var b=(z===1||z===2)?4:3;var n=doPush(me,b);if(z===1||z===2)S.rain+=20;S.frontType='cold';
+    return '東北季風吹拂,推進 '+n+absNote()+'。'},
+  ai:function(me){var z=zoneOf(S.pos);return calcPush(me,(z===1||z===2)?4:3)*2}},
+ occlusion:{n:'囚錮鋒',side:'cold',cost:3,ic:'🔒',d:'推進 4;暖方水氣 −2,取消暖鋒續推',
+  rt:'需要對手的暖鋒正在爬升',req:function(me){return S[other(me)].delayed>0},
+  sci:'囚錮鋒是移動較快的冷鋒追上暖鋒,把暖空氣完全抬離地面,雲雨帶也會慢慢減弱。',
+  run:function(me){var o=other(me);var n=doPush(me,4);S[o].H=cl(S[o].H-2);S[o].delayed=0;S.frontType='occluded';S.rain+=20;
+    return '冷鋒追上暖鋒,推進 '+n+absNote()+';暖空氣被抬離地面,水氣 −2。'},
+  ai:function(me){return calcPush(me,4)*2+3}},
+ stall:{n:'梅雨滯留鋒',side:'both',cost:2,ic:'🌫️',seasons:[0,1],d:'雙方接下來各一回合推進最多 1;雙方水氣 +1',
+  sci:'春末夏初,冷暖氣團勢均力敵,鋒面停在原地不動,就形成台灣的梅雨:連續好幾天的陰雨。',
+  run:function(me){S.stall=2;S.cold.H=cl(S.cold.H+1);S.warm.H=cl(S.warm.H+1);S.frontType='stationary';S.rain+=40;
+    return '鋒面停滯,梅雨開始;接下來雙方各一回合推進最多 1。'},
+  ai:function(me){return behind(me)?4:0.5}},
+ swFlow:{n:'西南氣流',side:'warm',cost:1,ic:'🌬️',d:'水氣 +2(夏天 +3)',
+  sci:'夏季西南氣流從熱帶海洋帶來暖濕空氣,水氣充沛,容易在台灣引發豪雨。',
+  run:function(me){var g=season()===1?3:2;S[me].H=cl(S[me].H+g);return '暖濕氣流補給,水氣 +'+g+'。'},
+  ai:function(me){return S[me].H<=4?3:1}},
+ warmFront:{n:'暖鋒爬升',side:'warm',cost:2,ic:'◖',d:'推進 2;下回合再推進 2',
+  sci:'暖鋒是暖空氣慢慢爬上冷空氣,形成範圍廣的層狀雲,降雨溫和但持續很久,過後氣溫回升。',
+  run:function(me){var n=doPush(me,2);S[me].delayed=2;S.frontType='warm';S.rain+=15;
+    return '暖空氣緩緩爬升,推進 '+n+absNote()+',下回合會持續推進。'},
+  ai:function(me){return calcPush(me,2)*2+2}},
+ thunder:{n:'雷陣雨',side:'warm',cost:2,ic:'⛈️',d:'消耗水氣 2;推進 4',
+  rt:'需要水氣 ≥ 2',req:function(me){return S[me].H>=2},
+  sci:'暖濕空氣上升時膨脹降溫,水氣凝結成雲降雨,還會釋放潛熱,讓空氣上升得更猛,所以爆發力很強。',
+  run:function(me){S[me].H=cl(S[me].H-2);var n=doPush(me,4);S.frontType='warm';S.rain+=40;
+    return '對流旺盛,雷陣雨爆發,推進 '+n+absNote()+';水氣 −2。'},
+  ai:function(me){return calcPush(me,4)*2}},
+ typhoon:{n:'颱風',side:'warm',cost:3,ic:'🌀',seasons:[1,2],d:'消耗水氣 5;推進 5;冷方氣壓 −2',
+  rt:'需要水氣 ≥ 6',req:function(me){return S[me].H>=6},
+  sci:'颱風是生在暖海面上的熱帶氣旋,靠海面蒸發的水氣和凝結釋放的潛熱當燃料,所以是暖心結構。',
+  run:function(me){var o=other(me);S[me].H=cl(S[me].H-5);var n=doPush(me,5);S[o].P=cl(S[o].P-2);S.frontType='warm';S.rain+=150;
+    return '颱風來襲!推進 '+n+absNote()+';水氣 −5,冷氣團氣壓 −2。'},
+  ai:function(me){return calcPush(me,5)*2+4}},
+ foehn:{n:'焚風',side:'warm',cost:2,ic:'🔥',d:'推進 2;鋒面在山脈時推進 4 且無視阻擋',
+  sci:'氣流翻過山脈後沿背風面下沉,被壓縮增溫,變得又乾又熱,這就是焚風。台東常見。',
+  run:function(me){var m=terrainAt()==='mountain';var n=doPush(me,m?4:2,{ignoreMtn:m});S.frontType='warm';
+    return (m?'熱空氣越山下沉,焚風發威,':'')+'推進 '+n+absNote()+'。'},
+  ai:function(me){var m=terrainAt()==='mountain';return calcPush(me,m?4:2,{ignoreMtn:m})*2}},
+ latent:{n:'潛熱釋放',side:'warm',cost:0,ic:'♨️',d:'消耗水氣 2;能量 +1',
+  rt:'需要水氣 ≥ 2',req:function(me){return S[me].H>=2},
+  sci:'水氣凝結成小水滴時會釋放熱量(潛熱),這股熱讓空氣更輕、更容易上升,是雷雨和颱風的能量來源。',
+  run:function(me){S[me].H=cl(S[me].H-2);S[me].E+=1;return '水氣凝結釋放潛熱,能量 +1。'},
+  ai:function(me){return S[me].H>=4?2.5:0}}
+};
+
+function poolOf(side){
+  var ids=[];
+  for(var k in CARDS){
+    var c=CARDS[k];
+    if(c.side===side||c.side==='both')ids.push(k);
+  }
+  return ids;
+}
+function drawHand(side){
+  var hand=shuffle(poolOf(side)).slice(0,4);
+  var basic=side==='cold'?'highPress':'swFlow';
+  if(hand.indexOf(basic)<0)hand[3]=basic;
+  return hand;
+}
+function blockReason(c,side){
+  if(c.seasons&&c.seasons.indexOf(season())<0)return '僅限'+c.seasons.map(function(i){return SEASONS[i].n}).join('、')+'季';
+  if(c.req&&!c.req(side))return c.rt;
+  if(S[side].E<c.cost)return '能量不足';
+  return '';
+}
+
+/* ===== 流程 ===== */
+function addLog(t,cls){S.log.unshift({t:t,c:cls||'sys'});if(S.log.length>40)S.log.pop()}
+
+function startGame(){
+  var pS=setup.side,aS=other(pS);
+  var po=ORIGINS[pS][setup.origin];
+  var ao=shuffle(ORIGINS[aS])[0];
+  function mk(o){return {P:o.P,H:o.H,E:3,shield:0,delayed:0,hand:[],origin:o}}
+  S={playerSide:pS,round:1,startSeason:setup.season,pos:13,turn:null,frontType:'none',stall:0,stallActive:false,
+     cold:mk(pS==='cold'?po:ao),warm:mk(pS==='warm'?po:ao),rain:0,log:[],quizUsed:false,busy:false,over:false,
+     learned:{},tip:null,lastAbsorb:0,fxq:[],fresh:false,shownSeason:-1};
+  addLog('對抗開始!你是'+NAME[pS]+'('+po.n+'),對手是'+ao.n+'。','sys');
+  $('#setup').hidden=true;$('#game').hidden=false;$('#endOv').hidden=true;
+  window.scrollTo(0,0);
+  beginTurn('cold');
+}
+
+function beginTurn(side){
+  if(S.over)return;
+  S.turn=side;var me=S[side];
+  me.shield=0;me.E=3;
+  S.stallActive=S.stall>0;if(S.stall>0)S.stall--;
+  if(side===S.playerSide){S.quizUsed=false;S.busy=false}else S.busy=true;
+  if(S.stallActive)addLog('🌫️ 鋒面停滯中:'+who(side)+'本回合推進最多 1。','sys');
+  if(me.delayed>0){
+    var n=doPush(side,me.delayed,{noBonus:true});
+    addLog(who(side)+'的暖鋒持續爬升,推進 '+n+absNote()+'。',side);
+    me.delayed=0;
+    if(checkWin()){renderAll();return}
+  }
+  me.hand=drawHand(side);
+  S.fresh=true;
+  renderAll();
+  if(side!==S.playerSide)aiTurn(side);
+}
+
+function playCard(side,id){
+  if(S.over)return;
+  var c=CARDS[id],me=S[side];
+  if(!c||me.hand.indexOf(id)<0||blockReason(c,side))return;
+  me.E-=c.cost;
+  var msg=c.run(side);
+  me.hand.splice(me.hand.indexOf(id),1);
+  S.learned[id]=1;
+  S.tip={n:c.n,t:c.sci};
+  addLog(who(side)+'打出【'+c.n+'】:'+msg,side);
+  checkWin();
+  renderAll();
+}
+
+function aiTurn(side){
+  var game=S;
+  var step=function(){
+    if(S!==game||S.over||S.turn!==side)return;
+    var me=S[side];
+    var opts=me.hand.filter(function(id){return !blockReason(CARDS[id],side)})
+      .map(function(id){return {id:id,s:CARDS[id].ai(side)}})
+      .filter(function(o){return o.s>0})
+      .sort(function(a,b){return b.s-a.s});
+    if(!opts.length){setTimeout(function(){if(S===game)endTurn()},800);return}
+    playCard(side,opts[0].id);
+    setTimeout(step,1100);
+  };
+  setTimeout(step,1000);
+}
+
+function endTurn(){
+  if(S.over)return;
+  if(S.turn==='cold')beginTurn('warm');else endRound();
+}
+
+function endRound(){
+  var t=terrainAt(),s=season(),notes=[];
+  if(t==='sea'){S.warm.H=cl(S.warm.H+1);S.cold.P=cl(S.cold.P-1);notes.push('🌊 海面補水氣,冷氣團被加熱變性:暖方水氣 +1,冷方氣壓 −1')}
+  if(t==='mountain'){S.warm.H=cl(S.warm.H-1);S.rain+=10;notes.push('⛰️ 迎風面降下地形雨:暖方水氣 −1')}
+  if(s===1){S.warm.H=cl(S.warm.H+1);notes.push('☀️ 夏季暖濕:暖方水氣 +1')}
+  if(s===3){S.cold.P=cl(S.cold.P+1);notes.push('❄️ 冬季冷高壓強盛:冷方氣壓 +1')}
+  if(notes.length)addLog('回合結算:'+notes.join(';')+'。','sys');
+  S.round++;
+  if(S.round>12){
+    var d=S.pos-13;
+    if(Math.abs(d)<=1)finish(null,'12 回合結束,鋒面停在中間,冷暖僵持不下,像一場長長的梅雨。');
+    else finish(d>0?'cold':'warm','12 回合結束,鋒面停在'+ZONES[zoneOf(S.pos)].f+','+NAME[d>0?'cold':'warm']+'佔上風。');
+    return;
+  }
+  if((S.round-1)%3===0){var ns=SEASONS[season()];addLog(ns.e+' 季節轉為'+ns.n+'季:'+ns.r,'sys')}
+  beginTurn('cold');
+}
+
+function checkWin(){
+  if(S.over)return true;
+  if(S.pos>=24){finish('cold','冷氣團一路南下,鋒面推進到了南海暖池!');return true}
+  if(S.pos<=2){finish('warm','暖氣團一路北上,鋒面推進到了華北大陸!');return true}
+  return false;
+}
+function finish(winner,why){
+  S.over=true;S.busy=true;
+  var you=S.playerSide;
+  var title=winner===null?'平手':(winner===you?'你贏了!':'對手贏了');
+  $('#rt').textContent=title;
+  $('#rw').textContent=why;
+  var temp=(22-(S.pos-13)*0.6).toFixed(1);
+  $('#rs').innerHTML='<div><b>'+ZONES[zoneOf(S.pos)].f+'</b><small>鋒面位置</small></div>'+
+    '<div><b>'+S.rain+' mm</b><small>累積降雨</small></div>'+
+    '<div><b>'+temp+'°C</b><small>全島氣溫</small></div>';
+  var ids=shuffle(Object.keys(S.learned)).slice(0,4);
+  $('#rl').innerHTML=ids.map(function(id){return '<li><b>'+CARDS[id].n+':</b>'+CARDS[id].sci+'</li>'}).join('')||'<li>這場沒出牌就結束了,下次多試試看吧。</li>';
+  $('#quizOv').hidden=true;
+  $('#endOv').hidden=false;
+}
+
+/* ===== 測驗 ===== */
+function openQuiz(){
+  if(!S||S.over||S.turn!==S.playerSide||S.quizUsed)return;
+  S.quizUsed=true;
+  if(!quizPool.length)quizPool=shuffle(QUIZ.map(function(_,i){return i}));
+  var q=QUIZ[quizPool.pop()];
+  var idx=shuffle([0,1,2,3]);
+  $('#qq').textContent=q.q;
+  $('#qexp').hidden=true;$('#qclose').hidden=true;
+  var box=$('#qopts');box.innerHTML='';
+  idx.forEach(function(oi){
+    var b=document.createElement('button');
+    b.className='qopt';b.textContent=q.o[oi];
+    b.onclick=function(){
+      var ok=oi===q.a;
+      [].forEach.call(box.children,function(x){x.disabled=true});
+      b.classList.add(ok?'ok':'no');
+      if(!ok){[].forEach.call(box.children,function(x){if(x.textContent===q.o[q.a])x.classList.add('ok')})}
+      if(ok){S[S.playerSide].E=Math.min(4,S[S.playerSide].E+1)}
+      var ex=$('#qexp');ex.hidden=false;
+      ex.textContent=(ok?'答對了,能量 +1。':'差一點,正確答案是「'+q.o[q.a]+'」。')+q.w;
+      $('#qclose').hidden=false;
+      renderAll();
+    };
+    box.appendChild(b);
+  });
+  $('#quizOv').hidden=false;
+  renderAll();
+}
+
+/* ===== 繪製 ===== */
+var FRONT={
+ none:{n:'尚無鋒面',w:'⛅',s:'',t:'兩股氣團勢均力敵,天空多雲,天氣平穩。'},
+ cold:{n:'冷鋒',w:'🌩️',s:'▶▶▶',t:'積雨雲發展,短暫雷陣雨、陣風增強;過後氣溫下降、天氣轉晴。'},
+ warm:{n:'暖鋒',w:'🌧️',s:'◖◖◖',t:'層狀雲增厚,持續性細雨,雨區廣、時間長;過後氣溫緩慢回升。'},
+ stationary:{n:'滯留鋒',w:'🌫️',s:'▶◖▶',t:'冷暖僵持不下,長時間陰雨,這就是梅雨。'},
+ occluded:{n:'囚錮鋒',w:'🌀',s:'▶◖▶',t:'冷鋒追上暖鋒,暖空氣被抬離地面,雲雨帶逐漸減弱。'}
+};
+
+function glyphs(){
+  var t=S.frontType,arr=[];
+  for(var i=0;i<6;i++){
+    if(t==='cold')arr.push('<span class="gc">▶</span>');
+    else if(t==='warm')arr.push('<span class="gw">◖</span>');
+    else if(t==='stationary')arr.push(i%2?'<span class="gw">◖</span>':'<span class="gc">▶</span>');
+    else if(t==='occluded')arr.push('<span class="go">'+(i%2?'◖':'▶')+'</span>');
+    else arr.push('<span>•</span>');
+  }
+  return arr.join('');
+}
+
+function renderMap(){
+  var pct=(S.pos+0.5)/27*100;
+  $('#cfield').style.width=pct+'%';
+  $('#wfield').style.left=pct+'%';
+  var mk=$('#mk');mk.className='mk '+S.frontType;mk.style.left=pct+'%';mk.innerHTML=glyphs();
+  var z=zoneOf(S.pos);
+  var tiles=$('#tiles').children;
+  for(var i=0;i<tiles.length;i++)tiles[i].classList.toggle('cur',i===z);
+  var zi=ZONES[z],tr=TERRAIN[zi.t],se=SEASONS[season()];
+  $('#zoneinfo').innerHTML='<b>戰場:'+zi.f+'('+tr.n+')</b> '+tr.r+'<br><b>'+se.e+' '+se.n+'季:</b>'+se.r;
+  var q=S.fxq;S.fxq=[];
+  if(!FX.reduce){
+    q.forEach(function(f,k){
+      var e=document.createElement('span');
+      e.className='fx '+f.side;
+      e.textContent=f.n>0?((f.side==='cold'?'▶ +':'◀ +')+f.n):'擋下!';
+      e.style.left=pct+'%';e.style.animationDelay=(k*0.3)+'s';
+      $('#mapwrap').appendChild(e);
+      setTimeout(function(){if(e.parentNode)e.parentNode.removeChild(e)},2200);
+    });
+  }
+}
+
+function renderYear(){
+  var st=S.startSeason,lab='',seg='',g,k,s;
+  for(g=0;g<4;g++){s=(st+g)%4;lab+='<span>'+SEASONS[s].e+' '+SEASONS[s].n+'</span>'}
+  for(k=0;k<12;k++){s=(st+Math.floor(k/3))%4;seg+='<i class="s'+s+(k<S.round-1?' done':'')+(k===S.round-1?' cur':'')+'"></i>'}
+  $('#year').innerHTML='<div class="ylab">'+lab+'</div><div class="ybar">'+seg+'</div>';
+}
+
+function renderForecast(){
+  var f=FRONT[S.frontType],el=$('#forecast');
+  el.className='panel forecast '+S.frontType;
+  var temp=(22-(S.pos-13)*0.6).toFixed(1);
+  el.innerHTML='<div class="fs"><span class="wi">'+f.w+'</span>'+f.n+'<em>'+f.s+'</em></div><div><p>'+f.t+'</p><div class="st">累積降雨 '+S.rain+' mm,全島氣溫約 '+temp+'°C'+(S.stallActive?',鋒面停滯中':'')+'</div></div>';
+}
+
+function panel(side){
+  var s=S[side],you=side===S.playerSide,act=S.turn===side&&!S.over;
+  var pips='';for(var i=0;i<4;i++)pips+='<span class="pip'+(act&&i<s.E?' on':'')+'"></span>';
+  var chips='';
+  if(s.shield>0)chips+='<span class="chip">🛡️ 逆溫層 '+s.shield+'</span>';
+  if(s.delayed>0)chips+='<span class="chip">⏳ 暖鋒續推 '+s.delayed+'</span>';
+  return '<div class="pn '+side+(act?' act':'')+'"><div class="ph"><b>'+(side==='cold'?'🧊 ':'🔥 ')+NAME[side]+'</b>'+(act?'<span class="live">行動中</span>':'<em>'+(you?'你':'對手')+'</em>')+'</div>'+
+   '<div class="og">'+(you?'你・':'對手・')+s.origin.n+'('+s.origin.tag+')</div>'+
+   '<div class="row"><span>氣壓</span><div class="bar"><i class="p" style="width:'+s.P*10+'%"></i></div><b>'+s.P+'</b></div>'+
+   '<div class="row"><span>水氣</span><div class="bar"><i class="h" style="width:'+s.H*10+'%"></i></div><b>'+s.H+'</b></div>'+
+   '<div class="row"><span>能量</span><div class="pips">'+pips+'</div></div>'+
+   '<div class="chips">'+chips+'</div></div>';
+}
+
+function renderHand(){
+  var el=$('#hand'),mine=S.turn===S.playerSide&&!S.over;
+  $('#handTitle').textContent=mine?'你的戰術卡':'你的戰術卡';
+  if(S.over){el.innerHTML='';return}
+  if(!mine){el.innerHTML='<div class="wait">對手行動中…</div>';return}
+  var me=S[S.playerSide];
+  if(!me.hand.length){el.innerHTML='<div class="wait">手牌都用完了,按「結束回合」。</div>';return}
+  var deal=S.fresh&&!FX.reduce;S.fresh=false;
+  el.innerHTML=me.hand.map(function(id,i){
+    var c=CARDS[id],why=blockReason(c,S.playerSide);
+    var tag=c.side==='both'?'冷暖都能用':(c.side==='cold'?'冷氣團':'暖氣團');
+    return '<button class="card '+c.side+(deal?' deal':'')+'" style="--i:'+i+'" data-id="'+id+'"'+(why?' disabled':'')+'>'+
+      '<span class="ct"><span class="ic">'+c.ic+'</span><span class="co">⚡'+c.cost+'</span></span>'+
+      '<span class="nm">'+c.n+'</span><span class="ds">'+c.d+'</span>'+
+      '<span class="tg">'+tag+(c.seasons?'、'+c.seasons.map(function(k){return SEASONS[k].n}).join('、')+'季':'')+'</span>'+
+      (why?'<span class="why">'+why+'</span>':'')+'</button>';
+  }).join('');
+}
+
+function renderAll(){
+  if(!S)return;
+  var sn=season();
+  if(S.shownSeason!==sn){S.shownSeason=sn;setSeasonTheme(sn);showSeasonToast(sn)}
+  $('#roundB').innerHTML='第 '+Math.min(S.round,12)+' 回合<small>共 12 回合</small>';
+  renderYear();renderMap();renderForecast();
+  $('#sides').innerHTML=panel('cold')+panel('warm');
+  renderHand();
+  var mine=S.turn===S.playerSide&&!S.over;
+  $('#endBtn').disabled=!mine;
+  $('#quizBtn').disabled=!(mine&&!S.quizUsed);
+  $('#tip').innerHTML=S.tip?'<b>💡 氣象小知識:'+S.tip.n+'</b>'+S.tip.t:'<b>💡 氣象小知識</b>出牌後,這裡會告訴你這張牌背後的天氣原理。';
+  $('#log').innerHTML=S.log.slice(0,8).map(function(l){return '<li class="'+l.c+'">'+l.t+'</li>'}).join('');
+}
+
+/* ===== 開局畫面 ===== */
+function renderSetup(){
+  $('#sideSeg').innerHTML=
+    '<button class="opt cold'+(setup.side==='cold'?' on':'')+'" data-side="cold"><b>🧊 冷氣團</b><small>從北方南下,靠高壓與冷鋒</small></button>'+
+    '<button class="opt warm'+(setup.side==='warm'?' on':'')+'" data-side="warm"><b>🔥 暖氣團</b><small>從南方北上,靠水氣與雷雨</small></button>';
+  $('#originSeg').innerHTML=ORIGINS[setup.side].map(function(o,i){
+    return '<button class="opt '+setup.side+(setup.origin===i?' on':'')+'" data-origin="'+i+'"><b>'+o.n+'</b><small>'+o.tag+',氣壓 '+o.P+'、水氣 '+o.H+'。'+o.d+'</small></button>';
+  }).join('');
+  $('#seasonSeg').innerHTML=SEASONS.map(function(s,i){
+    return '<button class="opt neutral'+(setup.season===i?' on':'')+'" data-season="'+i+'" style="--sc:'+SCOL[i]+'"><b>'+s.e+' '+s.n+'</b><small>'+s.sub+'</small></button>';
+  }).join('');
+}
+
+function backToSetup(){
+  S=null;
+  $('#game').hidden=true;$('#setup').hidden=false;$('#quizOv').hidden=true;$('#endOv').hidden=true;
+  setSeasonTheme(setup.season);
+  renderSetup();window.scrollTo(0,0);
+}
+
+function init(){
+  var st=$('#stitch'),h='';
+  for(var i=0;i<60;i++)h+='<span class="'+(i%2?'b':'a')+'">'+(i%2?'◖':'▶')+'</span>';
+  st.innerHTML=h;
+  $('#tiles').innerHTML=ZONES.map(function(z){return '<div class="tile" title="'+z.f+'"><span class="te">'+z.e+'</span><b>'+z.n+'</b><i>'+TERRAIN[z.t].n+'</i>'+ART[z.t]+'</div>'}).join('');
+  fxInit();
+  setSeasonTheme(setup.season);
+  renderSetup();
+
+  $('#sideSeg').addEventListener('click',function(e){var b=e.target.closest('[data-side]');if(!b)return;setup.side=b.dataset.side;setup.origin=0;renderSetup()});
+  $('#originSeg').addEventListener('click',function(e){var b=e.target.closest('[data-origin]');if(!b)return;setup.origin=+b.dataset.origin;renderSetup()});
+  $('#seasonSeg').addEventListener('click',function(e){var b=e.target.closest('[data-season]');if(!b)return;setup.season=+b.dataset.season;setSeasonTheme(setup.season);renderSetup()});
+  $('#start').addEventListener('click',startGame);
+  $('#hand').addEventListener('click',function(e){
+    var b=e.target.closest('.card');if(!b||b.disabled)return;
+    if(!S||S.turn!==S.playerSide||S.busy)return;
+    playCard(S.playerSide,b.dataset.id);
+  });
+  $('#endBtn').addEventListener('click',function(){if(S&&S.turn===S.playerSide&&!S.over){S.busy=true;endTurn()}});
+  $('#quizBtn').addEventListener('click',openQuiz);
+  $('#qclose').addEventListener('click',function(){$('#quizOv').hidden=true});
+  $('#restart').addEventListener('click',backToSetup);
+  $('#again').addEventListener('click',backToSetup);
+}
+init();
+})();
+</script>
+</body>
+</html>
